@@ -540,6 +540,218 @@
             </div>
         </div>
     </div>
+    <div class="our-sermons">
+        <div class="container">
+            <div class="row section-row">
+                <div class="section-title">
+                    <h3 class="wow fadeInUp">Our Audio</h3>
+                    <h2 class="text-anime-style-2" data-cursor="-opaque">Our Latest <span>Audio</span></h2>
+                </div>
+            </div>
+    
+            <div class="row">
+                <!-- Sermon 1 -->
+                
+                    <section id="audio-library">
+                        
+                        <div id="audio-section">
+                          <!-- Audio containers by title will be dynamically inserted here -->
+                        </div>
+                      
+                        <style>
+                          /* General Styles */
+                          #audio-library {
+                            padding: 20px;
+                            background-color: #FE6035;
+                            color: #ff0000;
+                            border-radius: 0 0 100px 0;
+                          }
+                      
+                          #audio-library h2 {
+                            text-align: center;
+                            font-family: Arial, sans-serif;
+                            color: #333;
+                          }
+                      
+                          /* Audio Section */
+                          #audio-section {
+                            display: flex;
+                            flex-direction: row; /* Arrange items horizontally */
+                            flex-wrap: wrap; /* Allow items to wrap onto the next line */
+                            gap: 20px; /* Space between the containers */
+                            justify-content: center; /* Center the containers */
+                          }
+                      
+                          /* Audio Container for each title */
+                          .audio-container {
+                            width: 100%; /* Take full width of the container */
+                            max-width: 300px; /* Limit the container width */
+                          }
+                      
+                          .audio-container h3 {
+                            font-size: 1.5em;
+                            margin-bottom: 15px;
+                            text-align: center;
+                          }
+                      
+                          /* Audio Card */
+                          .audio-card {
+                            border: 1px solid #ddd;
+                            border-radius: 8px;
+                            padding: 15px;
+                            width: 100%; /* Take full width of the container */
+                            max-width: 250px; /* Limit the card width for better readability */
+                            text-align: center;
+                            background-color: #fff;
+                            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                            margin-bottom: 15px;
+                          }
+                      
+                          .audio-card h4 {
+                            font-size: 1.2em;
+                            margin: 10px 0;
+                          }
+                      
+                          .audio-card p {
+                            font-size: 0.9em;
+                            color: #666;
+                            margin: 5px 0 15px;
+                          }
+                      
+                          /* Play Button */
+                          .play-button {
+                            width: 50px;
+                            height: 50px;
+                            background-color: #FE6035;
+                            border: none;
+                            border-radius: 50%;
+                            color: white;
+                            font-size: 18px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            cursor: pointer;
+                            outline: none;
+                          }
+                      
+                          .play-button:hover {
+                            background-color: #0056b3;
+                          }
+                      
+                          /* Responsive Design */
+                          @media (min-width: 768px) {
+                            .audio-container {
+                              width: 45%; /* Take up less space on larger screens */
+                            }
+                          }
+                      
+                          @media (min-width: 1200px) {
+                            .audio-container {
+                              width: 30%; /* Take up even less space on very large screens */
+                            }
+                          }
+                        </style>
+                      
+                        <script>
+                          const apiUrl = "https://cdn.contentful.com/spaces/x1e4ilm46ruv/environments/master/entries?access_token=40E2XFTU7R_6LwUkqKiUTMYRSryfVUw0HkC8JylF8jY";
+                      
+                          // Fetch and display audio files grouped by title
+                          async function fetchAndDisplayAudio() {
+                            try {
+                              const response = await fetch(apiUrl);
+                              const data = await response.json();
+                      
+                              const audioSection = document.getElementById('audio-section');
+                              const assets = data.includes.Asset;
+                      
+                              // Group items by title
+                              const groupedByTitle = {};
+                      
+                              data.items.forEach(item => {
+                                const title = item.fields?.audioTitle || "Untitled";
+                                const date = item.fields?.releaseDate || "Unknown Date";
+                                const audioId = item.fields.audioFile.sys.id;
+                      
+                                // Find the audio file URL from the assets array
+                                const audioFile = assets.find(asset => asset.sys.id === audioId);
+                                const audioUrl = audioFile ? `https:${audioFile.fields.file.url}` : null;
+                      
+                                if (audioUrl) {
+                                  if (!groupedByTitle[title]) {
+                                    groupedByTitle[title] = [];
+                                  }
+                      
+                                  // Add the audio item to the corresponding group
+                                  groupedByTitle[title].push({ date, audioUrl });
+                                }
+                              });
+                      
+                              // Create separate containers for each title
+                              Object.keys(groupedByTitle).forEach(title => {
+                                const container = document.createElement('div');
+                                container.classList.add('audio-container');
+                      
+                               
+                      
+                                // Create audio cards for each item under the title
+                                groupedByTitle[title].forEach(item => {
+                                  const audioCard = document.createElement('div');
+                                  audioCard.classList.add('audio-card');
+                      
+                                  const formattedDate = item.date !== "Unknown Date" ? new Date(item.date).toLocaleDateString() : item.date;
+                      
+                                  // Add content to the card
+                                  audioCard.innerHTML = `
+                                    <h4>${title}</h4>
+                                    <p>Release Date: ${formattedDate}</p>
+                                    <button class="play-button">▶</button>
+                                  `;
+                      
+                                  const playButton = audioCard.querySelector('.play-button');
+                                  const audio = new Audio(item.audioUrl);
+                      
+                                  // Play/pause logic for the custom button
+                                  playButton.addEventListener('click', () => {
+                                    if (audio.paused) {
+                                      audio.play();
+                                      playButton.textContent = '⏸'; // Change to pause symbol
+                                    } else {
+                                      audio.pause();
+                                      playButton.textContent = '▶'; // Change to play symbol
+                                    }
+                                  });
+                      
+                                  // Stop the audio and reset button when audio ends
+                                  audio.addEventListener('ended', () => {
+                                    playButton.textContent = '▶';
+                                  });
+                      
+                                  container.appendChild(audioCard);
+                                });
+                      
+                                // Append the container for the current title
+                                audioSection.appendChild(container);
+                              });
+                            } catch (error) {
+                              console.error("Error fetching audio data:", error);
+                            }
+                          }
+                      
+                          // Initialize the fetch on page load
+                          document.addEventListener('DOMContentLoaded', fetchAndDisplayAudio);
+                        </script>
+                      </section>
+                      
+                      
+                      
+                      
+    
+                </div>
+    
+    
+            </div>
+        </div>
+    </div>
 
     <!-- Our Counter Section Start -->
     <div class="our-counter">
